@@ -1,30 +1,28 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { axiosInstance } from "../lib/axios";
+import { signup } from "../lib/api";
 
 const SignUpPage = () => {
   const [signupData, setSignupData] = useState({
     userName: "",
+    fullName: "",
     email: "",
     password: "",
   });
 
   const queryClient = useQueryClient();
 
-  const { mutate, isPending, error } = useMutation({
-    mutationFn: async () => {
-      const response = await axiosInstance.post("/api/signup", signupData);
-      return response.data;
-    },
+  const { mutate, isLoading, error } = useMutation({
+    mutationFn: signup,
     onSuccess: () => {
-      queryClient.invalidateQueries(["authUser"]);
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
     },
   });
 
   const handleSignup = (event) => {
     event.preventDefault();
-    mutate();
+    mutate(signupData);
   };
 
   return (
@@ -41,9 +39,21 @@ const SignUpPage = () => {
               <input
                 type="text"
                 className="input input-bordered w-full"
-                value={signupData.username}
+                value={signupData.userName}
                 onChange={(e) =>
                   setSignupData({ ...signupData, userName: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-2">Full Name</label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                value={signupData.fullName}
+                onChange={(e) =>
+                  setSignupData({ ...signupData, fullName: e.target.value })
                 }
                 required
               />
@@ -73,7 +83,7 @@ const SignUpPage = () => {
               />
             </div>
             <button type="submit" className="btn btn-primary w-full">
-              {isPending ? "Signing Up..." : "Sign Up"}
+              {isLoading? "Signing Up..." : "Sign Up"}
             </button>
           </form>
           <p className="mt-4 text-sm text-gray-500">
