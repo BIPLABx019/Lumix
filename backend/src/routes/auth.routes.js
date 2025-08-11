@@ -10,6 +10,8 @@ router.post("/signup",signup)
 
 router.post("/logout",logout)
 
-router.get("/me", protectRoute, )
+router.get("/home", protectRoute, (req, res) => {
+  res.status(200).json({ message: "Welcome to the home page!" });
+});
 
 export default router;

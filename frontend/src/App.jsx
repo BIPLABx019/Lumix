@@ -1,5 +1,6 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 
 import HomePage from "./pages/HomePage";
 import GroupPage from "./pages/GroupPage";
@@ -9,21 +10,39 @@ import ChatPage from "./pages/ChatPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AppLayout from "./layout/AppLayout";
+
+import { axiosInstance } from "./lib/axios";
 
 const App = () => {
+
+  const { data: authdata, isLoading, error } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: async () => {
+      const response = await axiosInstance("/auth/home");
+      return response.data;
+    },
+    retry: false,
+  });
+
+  const isAuthenticated = authdata?.user
+
   return (
     <>
       <div>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
+          <Route element={isAuthenticated ? <AppLayout /> : <Navigate to="/login" />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/groups" element={<GroupPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+          </Route>
 
-          <Route path="/" element={<HomePage />} />
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/groups" element={<GroupPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/notfound" element={<NotFoundPage />} />
+          <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} />
+          <Route path="/signup" element={!isAuthenticated ? <SignUpPage /> : <Navigate to="/" />} />
+
+          <Route path="/*" element={<NotFoundPage />} />
         </Routes>
 
         <Toaster />
