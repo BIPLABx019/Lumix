@@ -15,23 +15,33 @@ import AppLayout from "./layout/AppLayout";
 import { axiosInstance } from "./lib/axios";
 
 const App = () => {
-
-  const { data: authdata, isLoading, error } = useQuery({
+  const {
+    data: authdata,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["authUser"],
     queryFn: async () => {
-      const response = await axiosInstance("/auth/home");
-      return response.data;
+      try {
+        const response = await axiosInstance("/auth/home");
+        return response.data;
+      } catch (err) {
+        console.error("Error fetching auth user:", err);
+        throw err;
+      }
     },
     retry: false,
   });
 
-  const isAuthenticated = authdata?.user
+  const isAuthenticated = authdata?.user;
 
   return (
     <>
       <div>
         <Routes>
-          <Route element={isAuthenticated ? <AppLayout /> : <Navigate to="/login" />}>
+          <Route
+            element={isAuthenticated ? <AppLayout /> : <Navigate to="/login" />}
+          >
             <Route path="/" element={<HomePage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/groups" element={<GroupPage />} />
@@ -39,8 +49,14 @@ const App = () => {
             <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
 
-          <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} />
-          <Route path="/signup" element={!isAuthenticated ? <SignUpPage /> : <Navigate to="/" />} />
+          <Route
+            path="/login"
+            element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/signup"
+            element={!isAuthenticated ? <SignUpPage /> : <Navigate to="/" />}
+          />
 
           <Route path="/*" element={<NotFoundPage />} />
         </Routes>

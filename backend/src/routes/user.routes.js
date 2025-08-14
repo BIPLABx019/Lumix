@@ -1,5 +1,5 @@
 import express from "express";
-import { protectRoute } from "../middlewares/auth.middlewares.js";
+import { protectRoute } from "../middlewares/auth.middleware.js";
 import { acceptFriendRequest, getFriendRequests, getMyFriends, getRecommendedUsers, sendFriendRequest } from "../controllers/user.controller.js";
 import { get } from "mongoose";
 

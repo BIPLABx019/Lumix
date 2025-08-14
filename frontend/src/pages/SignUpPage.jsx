@@ -11,28 +11,37 @@ const SignUpPage = () => {
     password: "",
   });
 
-  const queryClient = useQueryClient();
-
-  const { mutate, isLoading, error } = useMutation({
+  const {
+    mutate: signupMutation,
+    isLoading,
+    error,
+  } = useMutation({
     mutationFn: signup,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      console.log("User signed up successfully");
+      navigate("/login");
     },
   });
 
   const handleSignup = (event) => {
     event.preventDefault();
-    mutate(signupData);
+    signupMutation(signupData);
   };
 
   return (
     <div
       className="h-screen flex items-center justify-center p-4 sm:p-6 md:p-8"
-      data-theme="light"
+      data-theme="dark"
     >
       <div className="border border-primary/25 flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-base-100 rounded-xl overflow-hidden">
         <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8 flex flex-col">
           <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
+          {error && (
+            <div className="alert alert-error mb-4">
+              <span>{error.response.data.message}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
               <label className="block mb-2">Username</label>
@@ -83,7 +92,7 @@ const SignUpPage = () => {
               />
             </div>
             <button type="submit" className="btn btn-primary w-full">
-              {isLoading? "Signing Up..." : "Sign Up"}
+              {isLoading ? "Signing Up..." : "Sign Up"}
             </button>
           </form>
           <p className="mt-4 text-sm text-gray-500">
