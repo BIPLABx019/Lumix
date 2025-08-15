@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
-
 import HomePage from "./pages/HomePage";
 import GroupPage from "./pages/GroupPage";
 import LoginPage from "./pages/LoginPage";
@@ -11,8 +10,14 @@ import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import AppLayout from "./layout/AppLayout";
-
 import { axiosInstance } from "./lib/axios";
+
+const ProtectedRoute = ({ children, isAuthenticated }) => {
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 const App = () => {
   const {
@@ -22,47 +27,77 @@ const App = () => {
   } = useQuery({
     queryKey: ["authUser"],
     queryFn: async () => {
-      try {
-        const response = await axiosInstance("/auth/home");
-        return response.data;
-      } catch (err) {
-        console.error("Error fetching auth user:", err);
-        throw err;
-      }
+      const response = await axiosInstance("/auth/home");
+      return response.data;
     },
     retry: false,
   });
 
-  const isAuthenticated = authdata?.user;
+  const isAuthenticated = Boolean(authdata?.user);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Replace with spinner
+  }
 
   return (
     <>
-      <div>
-        <Routes>
+      <Routes>
+        <Route element={<AppLayout />}>
           <Route
-            element={isAuthenticated ? <AppLayout /> : <Navigate to="/login" />}
-          >
-            <Route path="/" element={<HomePage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/groups" element={<GroupPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-          </Route>
-
-          <Route
-            path="/login"
-            element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />}
+            path="/"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <HomePage />
+              </ProtectedRoute>
+            }
           />
           <Route
-            path="/signup"
-            element={!isAuthenticated ? <SignUpPage /> : <Navigate to="/" />}
+            path="/chat"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <ChatPage />
+              </ProtectedRoute>
+            }
           />
+          <Route
+            path="/groups"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <GroupPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
 
-          <Route path="/*" element={<NotFoundPage />} />
-        </Routes>
+        <Route
+          path="/login"
+          element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/signup"
+          element={!isAuthenticated ? <SignUpPage /> : <Navigate to="/" />}
+        />
 
-        <Toaster />
-      </div>
+        <Route path="/*" element={<NotFoundPage />} />
+      </Routes>
+
+      <Toaster />
     </>
   );
 };

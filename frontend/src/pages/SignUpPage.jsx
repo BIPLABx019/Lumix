@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signup } from "../lib/api";
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
+
   const [signupData, setSignupData] = useState({
     userName: "",
     fullName: "",
@@ -38,7 +40,11 @@ const SignUpPage = () => {
           <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
           {error && (
             <div className="alert alert-error mb-4">
-              <span>{error.response.data.message}</span>
+              <span>
+                {error.response?.data?.message ||
+                  error.message ||
+                  "Something went wrong"}
+              </span>
             </div>
           )}
 

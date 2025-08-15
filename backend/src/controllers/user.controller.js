@@ -12,7 +12,7 @@ export async function getRecommendedUsers(req,res) {
                 {$id: {$nin: currentUser.friends}}
             ]
         })
-        req.status(200).json(recommendedUsers);
+        res.status(200).json(recommendedUsers);
     } catch (error) {
 
         console.error("Error in Get Recommendations controller", error.message);
